@@ -766,6 +766,36 @@ passwordApp.controller("PasswordController", function($scope, $stateParams, $fir
 });
 ```
 
+## Locking Our App When Losing Focus
+
+The app may not always be in focus.  Maybe you've exited or put it in the background.  We want to make sure users are forced to re-enter their password when regaining focus in order to maintain security.
+
+```javascript,linenums=true
+passwordApp.run(function($ionicPlatform, $state) {
+    $ionicPlatform.ready(function() {
+        if(window.cordova && window.cordova.plugins.Keyboard) {
+            cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+        }
+        if(window.StatusBar) {
+            StatusBar.styleDefault();
+        }
+    });
+    document.addEventListener("resume", function() {
+        $state.go("locked", {}, {location: "replace"});
+    }, false);
+});
+```
+
+Notice in particular in the above code the event listener for resume.  When the application resumes focus we will be navigated to the locked screen just as if we were opening the application fresh.
+
+Finally inside the `VaultController` we need to add:
+
+```javascript
+$ionicHistory.clearHistory();
+```
+
+This will go above the `$ionicHistory.nextViewOptions`.  It is responsible for clearing our history stack when we resume the application.
+
 ## Properly Testing The App
 
 ### Using the Web Browser
